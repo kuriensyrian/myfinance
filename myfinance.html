@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MyFinance">
+<meta name="theme-color" content="#1e3a5f">
+<meta name="description" content="Personal Finance Tracker">
+<link rel="manifest" href="data:application/json,{
+  %22name%22:%22MyFinance%22,
+  %22short_name%22:%22MyFinance%22,
+  %22description%22:%22Personal%20Finance%20Tracker%22,
+  %22start_url%22:%22.%22,
+  %22display%22:%22standalone%22,
+  %22background_color%22:%22%23f0f4f8%22,
+  %22theme_color%22:%22%231e3a5f%22,
+  %22icons%22:[{%22src%22:%22https://via.placeholder.com/192x192/1e3a5f/ffffff?text=MF%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]
+}">
+<title>MyFinance — Thakin Joseph</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --primary:#1e3a5f;--primary2:#2d5a9e;--accent:#3b82f6;
+  --ok:#16a34a;--danger:#dc2626;--warn:#d97706;
+  --bg:#f0f4f8;--card:#fff;--text:#1e293b;--text2:#475569;--text3:#94a3b8;
+  --border:#e2e8f0;
+  --r:#fef2f2;--y:#fffbeb;--g:#f0fdf4;--b:#eff6ff;--p:#faf5ff;--c:#f0f9ff;
+}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--text);
+  display:flex;flex-direction:column;
+  max-width:480px;margin:0 auto;
+  position:relative;
+}
+.topbar{
+  background:var(--primary);color:#fff;
+  padding:14px 16px 12px;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;
+}
+.tb-title{font-size:17px;font-weight:700}
+.tb-sub{font-size:11px;color:#93c5fd;margin-top:2px}
+.tb-btn{
+  background:rgba(255,255,255,0.15);border:none;
+  border-radius:8px;color:#fff;font-size:13px;
+  padding:7px 12px;cursor:pointer;font-family:inherit;
+  -webkit-appearance:none;
+}
+.screens{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.screen{display:none;padding:14px 14px 80px}
+.screen.on{display:block}
+.bnav{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  background:#fff;border-top:1px solid var(--border);
+  flex-shrink:0;
+  box-shadow:0 -2px 10px rgba(0,0,0,0.08);
+}
+.nb{
+  display:flex;flex-direction:column;align-items:center;
+  padding:10px 0 8px;background:none;border:none;
+  color:var(--text3);font-size:10px;font-weight:600;
+  cursor:pointer;font-family:inherit;
+  -webkit-appearance:none;transition:color 0.15s;
+  min-height:56px;justify-content:center;
+}
+.nb .ni{font-size:22px;margin-bottom:3px;line-height:1}
+.nb.on{color:var(--primary)}
+.card{background:var(--card);border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:0 1px 5px rgba(0,0,0,0.06)}
+.ctitle{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:10px}
+.hero{
+  background:linear-gradient(135deg,var(--primary),var(--primary2));
+  border-radius:16px;padding:18px;color:#fff;margin-bottom:12px;
+}
+.hero-greet{font-size:13px;color:#93c5fd;margin-bottom:3px}
+.hero-month{font-size:19px;font-weight:800;margin-bottom:14px}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hg-cell{background:rgba(255,255,255,0.12);border-radius:10px;padding:11px}
+.hg-lbl{font-size:10px;color:#bfdbfe;font-weight:600;text-transform:uppercase;margin-bottom:3px}
+.hg-val{font-size:18px;font-weight:800}
+.hg-sub{font-size:10px;color:#93c5fd;margin-top:2px}
+.pb-hdr{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600}
+.pb-track{background:#e2e8f0;border-radius:99px;height:10px;overflow:hidden}
+.pb-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#3b82f6,#1d4ed8);transition:width 0.4s}
+.pb-fill.red{background:linear-gradient(90deg,#f59e0b,#dc2626)}
+.ss-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.ss-cell{border-radius:12px;padding:12px}
+.ss-icon{font-size:18px;margin-bottom:5px}
+.ss-lbl{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text2)}
+.ss-plan{font-size:15px;font-weight:800;color:var(--text);margin-top:2px}
+.ss-act{font-size:11px;font-weight:600;margin-top:2px}
+.ok{color:var(--ok)}.ng{color:var(--danger)}.na{color:var(--text3)}
+.mrow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.mrow:last-child{border-bottom:none}
+.ml{color:var(--text2)}.mv{font-weight:700}
+.def-card{background:var(--r);border:1px solid #fecaca;border-radius:14px;padding:14px;margin-bottom:12px}
+.def-title{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--danger);margin-bottom:10px}
+.mnav{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--card);border-radius:12px;padding:11px 14px;
+  margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05);
+}
+.mn-btn{
+  background:var(--bg);border:none;border-radius:8px;
+  font-size:20px;padding:6px 14px;cursor:pointer;
+  -webkit-appearance:none;
+}
+.mn-lbl{font-size:16px;font-weight:800;color:var(--primary)}
+.inc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.inc-cell{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.inc-lbl{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:5px}
+.inc-plan{font-size:17px;font-weight:800;color:var(--primary)}
+.col-hdr{
+  display:grid;grid-template-columns:1fr 68px 72px;
+  gap:4px;padding:6px 12px;
+  background:#f8fafc;border-radius:8px;margin-bottom:4px;
+}
+.ch{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;text-align:right}
+.ch:first-child{text-align:left}
+.sec-block{margin-bottom:10px}
+.sec-lbl{
+  font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;
+  padding:9px 12px;border-radius:8px 8px 0 0;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.sec-lbl.sd{background:var(--r);color:#991b1b;border-left:4px solid #ef4444}
+.sec-lbl.sh{background:var(--y);color:#92400e;border-left:4px solid #f59e0b}
+.sec-lbl.sl{background:var(--g);color:#065f46;border-left:4px solid #10b981}
+.sec-lbl.si{background:var(--p);color:#4c1d95;border-left:4px solid #8b5cf6}
+.sec-lbl.ss{background:var(--c);color:#0c4a6e;border-left:4px solid #06b6d4}
+.sec-lbl.sv{background:var(--b);color:#1e3a5f;border-left:4px solid #6366f1}
+.sec-lbl.sb{background:#fefce8;color:#713f12;border-left:4px solid #f59e0b}
+.trow{
+  background:var(--card);border-bottom:1px solid var(--border);
+  padding:10px 12px;
+  display:grid;grid-template-columns:1fr 68px 72px;
+  gap:4px;align-items:center;
+}
+.trow:last-of-type{border-bottom:none}
+.ti-name{font-size:12.5px;color:var(--text);font-weight:500;line-height:1.3}
+.ti-hint{font-size:10px;color:var(--text3);margin-top:1px}
+.ti-plan{font-size:13px;font-weight:700;color:var(--primary);text-align:right}
+.ti-inp{
+  width:100%;text-align:right;
+  border:1.5px solid var(--border);border-radius:7px;
+  padding:6px 6px;font-size:13px;font-weight:600;
+  font-family:inherit;color:var(--text);background:#f8fafc;outline:none;
+  -webkit-appearance:none;
+}
+.ti-inp:focus{border-color:var(--accent);background:var(--b)}
+.ti-inp.ov{border-color:var(--danger);background:var(--r)}
+.ti-inp.un{border-color:#86efac;background:var(--g)}
+.str{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 12px;background:#f1f5f9;
+  border-radius:0 0 8px 8px;
+  font-size:12px;font-weight:700;color:var(--text2);
+}
+.str-r{display:flex;gap:12px}
+.sp{color:var(--ok)}.sn{color:var(--danger)}
+.gtcard{background:var(--primary);border-radius:14px;padding:15px;margin-bottom:12px;color:#fff}
+.gt-title{font-size:11px;color:#93c5fd;font-weight:700;text-transform:uppercase;margin-bottom:10px}
+.gt-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.1);font-size:13px}
+.gt-row:last-child{border-bottom:none;font-size:15px;font-weight:800;padding-top:10px}
+.gl{color:#bfdbfe}.gv{font-weight:700}
+.gsurp{color:#86efac}.gdef{color:#fca5a5}
+.dcard{background:var(--card);border-radius:14px;padding:15px;margin-bottom:10px;box-shadow:0 1px 5px rgba(0,0,0,0.06)}
+.dc-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.dc-name{font-size:13px;font-weight:700;color:var(--text);flex:1;padding-right:8px}
+.dc-rate{font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;white-space:nowrap}
+.rh{background:var(--r);color:var(--danger)}
+.rm{background:#fff7ed;color:#c2410c}
+.rl{background:var(--g);color:var(--ok)}
+.dc-amt{font-size:21px;font-weight:800;color:var(--primary);margin-bottom:3px}
+.dc-emi{font-size:11px;color:var(--text2);margin-bottom:8px}
+.dc-pb{background:#e2e8f0;border-radius:99px;height:7px;overflow:hidden;margin-bottom:5px}
+.dc-pf{height:100%;border-radius:99px}
+.dc-pl{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-weight:600}
+.dc-tgt{font-size:11px;font-weight:700;margin-top:8px;padding:6px 10px;border-radius:8px;background:var(--b);color:var(--primary)}
+.dc-upd{display:flex;gap:8px;margin-top:10px}
+.dc-upd input{
+  flex:1;border:1.5px solid var(--border);border-radius:8px;
+  padding:8px 10px;font-size:13px;font-family:inherit;
+  color:var(--text);background:#f8fafc;outline:none;-webkit-appearance:none;
+}
+.dc-upd input:focus{border-color:var(--accent)}
+.dc-upd button{
+  background:var(--primary);color:#fff;border:none;
+  border-radius:8px;padding:8px 14px;font-size:12px;
+  font-weight:700;font-family:inherit;cursor:pointer;
+  -webkit-appearance:none;
+}
+.hmonth{background:var(--card);border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.hm-hdr{display:flex;justify-content:space-between;align-items:center;padding:14px 15px;cursor:pointer}
+.hm-name{font-size:15px;font-weight:700;color:var(--text)}
+.hm-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.hm-right{display:flex;align-items:center;gap:8px}
+.hm-bal{font-size:15px;font-weight:800}
+.hm-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px}
+.bok{background:var(--g);color:var(--ok)}
+.bng{background:var(--r);color:var(--danger)}
+.hm-body{border-top:1px solid var(--border);padding:12px 15px;display:none}
+.hm-body.open{display:block}
+.hb-row{display:flex;justify-content:space-between;padding:5px 0;font-size:12px;border-bottom:1px solid #f8fafc}
+.hb-row:last-child{border-bottom:none}
+.hb-cat{color:var(--text2)}.hb-val{font-weight:700}
+.prof-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.prof-row:last-child{border-bottom:none}
+.pl{color:var(--text2)}.pv{font-weight:700}
+.act-btn{
+  display:flex;align-items:center;gap:12px;
+  background:var(--card);border:none;border-radius:12px;
+  padding:14px 15px;width:100%;cursor:pointer;
+  font-family:inherit;color:var(--text);
+  font-size:14px;font-weight:600;
+  margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.05);
+  text-align:left;-webkit-appearance:none;
+}
+.act-btn .ai{font-size:20px}
+.act-btn .as{font-size:11px;color:var(--text3);font-weight:400;display:block;margin-top:2px}
+.act-btn.red{color:var(--danger)}
+.toast{
+  position:fixed;bottom:75px;left:50%;transform:translateX(-50%);
+  background:var(--primary);color:#fff;
+  padding:10px 20px;border-radius:99px;
+  font-size:13px;font-weight:600;
+  z-index:9999;opacity:0;pointer-events:none;
+  transition:opacity 0.3s;white-space:nowrap;
+  max-width:90%;text-align:center;
+}
+.toast.show{opacity:1}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="tb-title" id="tbTitle">Dashboard</div>
+    <div class="tb-sub">Thakin Joseph · Abu Dhabi</div>
+  </div>
+  <button class="tb-btn" id="settingsBtn">⚙️</button>
+</div>
+
+<div class="screens">
+
+  <!-- DASHBOARD -->
+  <div class="screen on" id="scDash">
+    <div class="hero">
+      <div class="hero-greet" id="greet">Good morning 👋</div>
+      <div class="hero-month" id="heroMonth">Loading...</div>
+      <div class="hero-grid">
+        <div class="hg-cell">
+          <div class="hg-lbl">Income</div>
+          <div class="hg-val" id="dIncome">23,000</div>
+          <div class="hg-sub">AED planned</div>
+        </div>
+        <div class="hg-cell">
+          <div class="hg-lbl">Spent</div>
+          <div class="hg-val" id="dSpent">0</div>
+          <div class="hg-sub">AED so far</div>
+        </div>
+        <div class="hg-cell">
+          <div class="hg-lbl">Remaining</div>
+          <div class="hg-val" id="dRemain">23,000</div>
+          <div class="hg-sub">AED left</div>
+        </div>
+        <div class="hg-cell">
+          <div class="hg-lbl">vs Plan</div>
+          <div class="hg-val" id="dSaved">—</div>
+          <div class="hg-sub">difference</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="pb-hdr"><span>Budget Used</span><span id="dPct">0%</span></div>
+      <div class="pb-track"><div class="pb-fill" id="dPbFill" style="width:0%"></div></div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px" id="dStatus">
+        Enter actuals in Tracker tab to see live progress
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;padding:0 4px 8px">Monthly Breakdown</div>
+    <div class="ss-grid" id="ssGrid"></div>
+    <div class="card">
+      <div class="ctitle">🎯 Key Milestones</div>
+      <div class="mrow"><span class="ml">🔴 Card 3b Target Done</span><span class="mv" style="color:var(--warn)">Nov 2026</span></div>
+      <div class="mrow"><span class="ml">🎉 ENBD Loan Done</span><span class="mv" style="color:var(--accent)">Nov 2028</span></div>
+      <div class="mrow"><span class="ml">🏠 India Home Loan Done</span><span class="mv" style="color:var(--ok)">Late 2033</span></div>
+      <div class="mrow"><span class="ml">🏁 Retirement</span><span class="mv" style="color:var(--primary)">Dec 2035</span></div>
+      <div class="mrow"><span class="ml">💰 Monthly relief Nov 2028</span><span class="mv" style="color:var(--ok)">+AED 5,383</span></div>
+    </div>
+    <div class="def-card">
+      <div class="def-title">⚠️ Honest Monthly Deficit</div>
+      <div class="mrow"><span class="ml">Safe Income</span><span class="mv ok">AED 23,000</span></div>
+      <div class="mrow"><span class="ml">Total Planned Spend</span><span class="mv ng">AED 25,949</span></div>
+      <div class="mrow"><span class="ml" style="font-weight:700">Raw Deficit</span><span class="mv ng" style="font-size:16px">AED −2,949</span></div>
+      <div style="font-size:11px;color:#991b1b;margin-top:8px;line-height:1.7">
+        Covered by: Exness upside (+AED 704) + lifestyle cuts (−AED 730) + cashback (~AED 82)
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACKER -->
+  <div class="screen" id="scTrack">
+    <div class="mnav">
+      <button class="mn-btn" id="btnPrev">‹</button>
+      <div class="mn-lbl" id="trackLbl">—</div>
+      <button class="mn-btn" id="btnNext">›</button>
+    </div>
+    <div class="inc-row">
+      <div class="inc-cell">
+        <div class="inc-lbl">Actual Income</div>
+        <input class="ti-inp" style="width:100%;margin-top:4px" type="number" inputmode="numeric" id="incInp" placeholder="23000">
+      </div>
+      <div class="inc-cell">
+        <div class="inc-lbl">Planned</div>
+        <div class="inc-plan" style="margin-top:6px">AED 23,000</div>
+      </div>
+    </div>
+    <div class="col-hdr">
+      <div class="ch">Item</div>
+      <div class="ch">Plan</div>
+      <div class="ch">Actual</div>
+    </div>
+    <div id="trackSecs"></div>
+    <div class="gtcard">
+      <div class="gt-title">📊 Month Summary</div>
+      <div class="gt-row"><span class="gl">Total Planned</span><span class="gv">AED 25,949</span></div>
+      <div class="gt-row"><span class="gl">Total Actual</span><span class="gv" id="gtA">—</span></div>
+      <div class="gt-row"><span class="gl">vs Budget</span><span class="gv" id="gtS">—</span></div>
+      <div class="gt-row"><span class="gl">Income vs Spend</span><span class="gv" id="gtB">—</span></div>
+    </div>
+  </div>
+
+  <!-- DEBTS -->
+  <div class="screen" id="scDebt">
+    <div class="card" style="background:var(--r);border:1px solid #fecaca">
+      <div style="font-size:13px;font-weight:700;color:#991b1b;margin-bottom:4px">🔴 Total UAE Debt</div>
+      <div style="font-size:24px;font-weight:800;color:var(--danger)" id="totalDebt">AED 2,10,414</div>
+      <div style="font-size:11px;color:#991b1b;margin-top:4px">Update each card balance monthly</div>
+    </div>
+    <div id="debtList"></div>
+    <div class="dcard">
+      <div class="ctitle">🇮🇳 India Home Loan — SBI Kochi</div>
+      <div class="dc-amt" id="indiaAmt">₹47,92,222</div>
+      <div class="dc-emi">EMI ₹54,600 + Extra ₹11,510 = ₹66,110/month</div>
+      <div class="dc-pb"><div class="dc-pf" style="width:62.5%;background:#8b5cf6"></div></div>
+      <div class="dc-pl"><span>~62.5% paid</span><span>Started ~2010</span></div>
+      <div class="dc-tgt">🎯 Target: Late 2033 — 2 yrs before retirement ✅</div>
+      <div class="dc-upd">
+        <input type="number" inputmode="numeric" id="indiaInp" placeholder="Update ₹ outstanding">
+        <button id="indiaBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="screen" id="scHist">
+    <div class="card" style="padding:12px 14px;margin-bottom:12px">
+      <div class="ctitle">📈 Spending History</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7">
+        Archive each month from Settings. Tap any month below to expand full breakdown.
+      </div>
+    </div>
+    <div id="histList"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="screen" id="scSet">
+    <div class="card">
+      <div class="ctitle">👤 Profile</div>
+      <div class="prof-row"><span class="pl">Name</span><span class="pv">Thakin Joseph</span></div>
+      <div class="prof-row"><span class="pl">Age</span><span class="pv">40</span></div>
+      <div class="prof-row"><span class="pl">Location</span><span class="pv">Abu Dhabi, UAE</span></div>
+      <div class="prof-row"><span class="pl">Retirement</span><span class="pv">December 2035</span></div>
+      <div class="prof-row"><span class="pl">Safe Income</span><span class="pv">AED 23,000/month</span></div>
+    </div>
+    <div class="card">
+      <div class="ctitle">💰 Assets Snapshot</div>
+      <div class="prof-row"><span class="pl">UAE Stocks</span><span class="pv ok">AED 1,195</span></div>
+      <div class="prof-row"><span class="pl">National Bonds</span><span class="pv ok">AED 1,000</span></div>
+      <div class="prof-row"><span class="pl">Mutual Funds India</span><span class="pv ok">₹1,42,000</span></div>
+      <div class="prof-row"><span class="pl">India Stocks Zerodha</span><span class="pv ok">₹3,95,727</span></div>
+      <div class="prof-row"><span class="pl">Bitcoin (0.0042452 BTC)</span><span class="pv ok">₹38,700</span></div>
+      <div class="prof-row"><span class="pl">Gratuity (est.)</span><span class="pv" style="color:var(--accent)">~AED 1,40,350</span></div>
+    </div>
+    <div class="ctitle" style="padding:0 4px 8px;margin-top:4px">Data Management</div>
+    <button class="act-btn" id="btnArchive">
+      <span class="ai">📦</span>
+      <div>Archive This Month<span class="as">Save current month to history and reset tracker</span></div>
+    </button>
+    <button class="act-btn" id="btnExport">
+      <span class="ai">📤</span>
+      <div>Export Backup<span class="as">Download all data as JSON file</span></div>
+    </button>
+    <button class="act-btn" id="btnImportTrig">
+      <span class="ai">📥</span>
+      <div>Import Backup<span class="as">Restore from previously exported file</span></div>
+    </button>
+    <input type="file" id="importFile" accept=".json" style="display:none">
+    <button class="act-btn red" id="btnReset">
+      <span class="ai">🗑️</span>
+      <div>Reset All Data<span class="as">Clears everything — export backup first!</span></div>
+    </button>
+    <div style="text-align:center;padding:20px;font-size:11px;color:var(--text3);line-height:1.9">
+      MyFinance v2.1 · Personal Use Only<br>
+      Data stored on this device only<br>
+      Never sent anywhere · 100% private
+    </div>
+  </div>
+
+</div>
+
+<div class="bnav">
+  <button class="nb on" id="nb0"><span class="ni">🏠</span>Home</button>
+  <button class="nb" id="nb1"><span class="ni">📝</span>Tracker</button>
+  <button class="nb" id="nb2"><span class="ni">💳</span>Debts</button>
+  <button class="nb" id="nb3"><span class="ni">📅</span>History</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SECS=[
+  {id:'debt',lbl:'🔴 Debt',cls:'sd',plan:7387,items:[
+    {id:'enbd',n:'ENBD Personal Loan EMI',h:'Auto-debit — fixed',p:5383},
+    {id:'c3b',n:'Card 3b EMI Regular',h:'CBD ONE 25.19% 🔴',p:535},
+    {id:'c5bt',n:'Card 5 BT EMI (2 plans)',h:'Citi Bank BT',p:632},
+    {id:'c6epp',n:'Card 6 Statement EPP',h:'15.39% rate',p:331},
+    {id:'c7',n:'Card 7 Installment',h:'12.81% rate',p:265},
+    {id:'c1',n:'Card 1 Installment',h:'6.54% rate',p:188},
+    {id:'c2',n:'Card 2 Installment',h:'6.54% rate',p:53}
+  ]},
+  {id:'housing',lbl:'🏠 Housing',cls:'sh',plan:4499,items:[
+    {id:'rent',n:'Rent',h:'AED 11,025 quarterly ÷ 3',p:3675},
+    {id:'taqa',n:'TAQA — Electricity + Water',h:'',p:426},
+    {id:'etis',n:'Etisalat WiFi',h:'',p:314},
+    {id:'sergas',n:'Sergas — Cooking Gas',h:'',p:84}
+  ]},
+  {id:'lifestyle',lbl:'🛒 Lifestyle',cls:'sl',plan:3874,items:[
+    {id:'groc',n:'Groceries',h:'Lulu, Carrefour, Amazon Now',p:1350},
+    {id:'petrol',n:'Petrol',h:'ADNOC — all cards',p:300},
+    {id:'dining',n:'Dining + Food Delivery',h:'Zomato, Noon, restaurants',p:660},
+    {id:'medical',n:'Medical + Pharmacy',h:'Medeor, Burjeel, LLH',p:300},
+    {id:'transport',n:'Transport — Taxis + DARB',h:'',p:400},
+    {id:'shopping',n:'Shopping + Clothing',h:'Wear Mart, Decathlon',p:160},
+    {id:'kids',n:'Kids Related Expenses',h:'Salon, books, toys',p:105},
+    {id:'carwash',n:'Car Wash',h:'',p:120},
+    {id:'parking',n:'Resident Parking',h:'',p:133},
+    {id:'laundry',n:'Laundry + Mobile Recharges',h:'Nasser Laundry',p:134},
+    {id:'bigt',n:'Bigticket',h:'Net cost',p:212}
+  ]},
+  {id:'india',lbl:'🇮🇳 India',cls:'si',plan:4290,items:[
+    {id:'hlemi',n:'Home Loan EMI',h:'SBI ₹54,600 paid 15th',p:2374},
+    {id:'hlext',n:'Home Loan Extra Principal',h:'₹11,510 paid 1st',p:500},
+    {id:'mfsip',n:'Mutual Fund SIPs',h:'₹11,500',p:500},
+    {id:'ksfe',n:'KSFE Chitty',h:'₹5,000/month',p:217},
+    {id:'ksfed',n:'KSFE Double — 2 Units',h:'₹10,000/month',p:435},
+    {id:'pmgc',n:'PMGC Chitty',h:'₹4,000/month',p:174},
+    {id:'tins',n:'Term Insurance',h:'₹700 avg',p:30},
+    {id:'prav',n:'Pravasi Welfare x2',h:'₹700',p:31},
+    {id:'imob',n:'India Mobile Recharges',h:'₹667 avg',p:29}
+  ]},
+  {id:'setaside',lbl:'📅 Set-Asides',cls:'ss',plan:1899,items:[
+    {id:'school',n:'School Fees — Child 1',h:'~AED 8,100/yr ÷ 12',p:675},
+    {id:'sonins',n:'Son Health Insurance',h:'~AED 2,918/yr Oct ÷ 12',p:243},
+    {id:'dins',n:'Daughter Insurance LIVA',h:'AED 2,310/yr Feb ÷ 12',p:193},
+    {id:'mins',n:'Mother Health Insurance',h:'AED 4,080/yr Mar ÷ 12',p:340},
+    {id:'visa',n:'Visa/EID — All Family',h:'AED 1,692/yr avg ÷ 12',p:141},
+    {id:'carins',n:'Car Insurance + Testing + Reg',h:'AED 2,182/yr Sep ÷ 12',p:182},
+    {id:'carsvc',n:'Car Service Contract',h:'AED 3,122 ÷ 36 months',p:87},
+    {id:'cfee',n:'Card Annual Fees',h:'÷ 12',p:28},
+    {id:'iloe',n:'iLoe Insurance',h:'',p:10}
+  ]},
+  {id:'invest',lbl:'💎 Invest',cls:'sv',plan:1000,items:[
+    {id:'ochitty',n:'Office Chitty Repayment',h:'Rotating investment',p:1000}
+  ]},
+  {id:'buffer',lbl:'🛡️ Buffer',cls:'sb',plan:2000,items:[
+    {id:'c3bx',n:'Card 3b EXTRA Payment',h:'From referral — kill 25.19% 🔴',p:1000},
+    {id:'nbonds',n:'National Bonds Top-up',h:'Emergency fund build',p:500},
+    {id:'adcb',n:'ADCB / Misc Buffer',h:'Residual referral',p:500}
+  ]}
+];
+
+var DEBTS=[
+  {id:'enbd',n:'ENBD Personal Loan',amt:160432,emi:5383,rate:'9.24%',rc:'rm',tgt:'Nov 2028',prog:15,col:'#3b82f6'},
+  {id:'c3b',n:'Card 3b — CBD ONE',amt:9878,emi:535,rate:'25.19% 🔴',rc:'rh',tgt:'Nov 2026 🎯',prog:2,col:'#ef4444'},
+  {id:'c5',n:'Card 5 — Balance Transfer',amt:9487,emi:632,rate:'10.77%',rc:'rm',tgt:'~Oct 2029',prog:20,col:'#f59e0b'},
+  {id:'c6',n:'Card 6 — Statement EPP',amt:10271,emi:331,rate:'15.39%',rc:'rh',tgt:'~2029–30',prog:10,col:'#8b5cf6'},
+  {id:'c7',n:'Card 7 — Installment',amt:11645,emi:265,rate:'12.81%',rc:'rm',tgt:'Jan 2030',prog:5,col:'#6366f1'},
+  {id:'c1',n:'Card 1 — Installment',amt:5063,emi:188,rate:'6.54%',rc:'rl',tgt:'~2028',prog:30,col:'#10b981'},
+  {id:'c2',n:'Card 2 — Installment',amt:1697,emi:53,rate:'6.54%',rc:'rl',tgt:'~2029',prog:55,col:'#10b981'}
+];
+
+var GP=25949;
+var curKey=mkKey(new Date());
+var DB={months:{},debts:{},archive:{}};
+var curScr=0;
+
+function mkKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function mkLbl(k){var ms=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];var p=k.split('-');return ms[parseInt(p[1])-1]+' '+p[0];}
+function getMD(k){if(!DB.months[k])DB.months[k]={actuals:{},income:''};return DB.months[k];}
+function load(){try{var r=localStorage.getItem('mf3');if(r)DB=JSON.parse(r);}catch(e){}}
+function save(){try{localStorage.setItem('mf3',JSON.stringify(DB));}catch(e){toast('⚠️ Storage full!');}}
+function fnum(n){return Number(n).toLocaleString('en-IN');}
+var tt=null;
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.className='toast show';if(tt)clearTimeout(tt);tt=setTimeout(function(){t.className='toast';},2500);}
+
+function calcTot(a){var t=0;SECS.forEach(function(s){s.items.forEach(function(i){if(a[i.id]!==undefined)t+=a[i.id];});});return t;}
+
+// NAV
+var SCRS=['scDash','scTrack','scDebt','scHist','scSet'];
+var TTLS=['Dashboard','Monthly Tracker','Debt Tracker','History','Settings'];
+function goTo(i){
+  SCRS.forEach(function(id){var e=document.getElementById(id);if(e)e.className='screen';});
+  var s=document.getElementById(SCRS[i]);if(s)s.className='screen on';
+  ['nb0','nb1','nb2','nb3'].forEach(function(id,j){var e=document.getElementById(id);if(e)e.className='nb'+(j===i?' on':'');});
+  document.getElementById('tbTitle').textContent=TTLS[i];
+  curScr=i;
+  document.querySelector('.screens').scrollTop=0;
+  if(i===0)rDash();
+  if(i===1)rTrack();
+  if(i===2)rDebts();
+  if(i===3)rHist();
+}
+
+// DASHBOARD
+var SS_CO={debt:['var(--r)','#ef4444'],housing:['var(--y)','#f59e0b'],lifestyle:['var(--g)','#10b981'],india:['var(--p)','#8b5cf6'],setaside:['var(--c)','#06b6d4'],invest:['var(--b)','#6366f1'],buffer:['#fefce8','#f59e0b']};
+var SS_IC={debt:'🔴',housing:'🏠',lifestyle:'🛒',india:'🇮🇳',setaside:'📅',invest:'💎',buffer:'🛡️'};
+
+function rDash(){
+  var h=new Date().getHours();
+  document.getElementById('greet').textContent=h<12?'Good morning 👋':h<17?'Good afternoon 👋':'Good evening 👋';
+  document.getElementById('heroMonth').textContent=mkLbl(curKey);
+  var md=getMD(curKey);
+  var inc=parseFloat(md.income)||23000;
+  var tot=calcTot(md.actuals);
+  var any=Object.keys(md.actuals).length>0;
+  document.getElementById('dIncome').textContent=fnum(inc);
+  document.getElementById('dSpent').textContent=any?fnum(Math.round(tot)):'0';
+  document.getElementById('dRemain').textContent=fnum(Math.round(inc-tot));
+  var ds=document.getElementById('dSaved');
+  if(any){var d=23000-tot;ds.textContent=(d>=0?'+':'')+fnum(Math.round(d));ds.style.color=d>=0?'#86efac':'#fca5a5';}
+  else{ds.textContent='—';ds.style.color='#93c5fd';}
+  var pct=any?Math.min(200,Math.round(tot/inc*100)):0;
+  var f=document.getElementById('dPbFill');
+  f.style.width=Math.min(100,pct)+'%';
+  f.className='pb-fill'+(pct>90?' red':'');
+  document.getElementById('dPct').textContent=pct+'%';
+  document.getElementById('dStatus').textContent=any?(pct<=100?'✅ On track — AED '+fnum(Math.round(inc-tot))+' remaining':'⚠️ Over income by AED '+fnum(Math.round(tot-inc))):'Enter actuals in Tracker tab to see live progress';
+  var g=document.getElementById('ssGrid');g.innerHTML='';
+  SECS.forEach(function(sec){
+    var t=0;var an=false;
+    sec.items.forEach(function(it){if(md.actuals[it.id]!==undefined){t+=md.actuals[it.id];an=true;}});
+    var co=SS_CO[sec.id]||['#f8fafc','#64748b'];
+    var diff=sec.plan-t;
+    var d=document.createElement('div');
+    d.className='ss-cell';d.style.background=co[0];d.style.borderLeft='3px solid '+co[1];
+    d.innerHTML='<div class="ss-icon">'+SS_IC[sec.id]+'</div>'
+      +'<div class="ss-lbl">'+sec.lbl.replace(/^[^ ]+ /,'')+'</div>'
+      +'<div class="ss-plan">AED '+fnum(sec.plan)+'</div>'
+      +'<div class="ss-act '+(an?(diff>=0?'ok':'ng'):'na')+'">'+(an?(diff>=0?'✅ Under ':'⚠️ Over ')+fnum(Math.abs(Math.round(diff))):'Not entered yet')+'</div>';
+    g.appendChild(d);
+  });
+}
+
+// TRACKER
+function rTrack(){
+  document.getElementById('trackLbl').textContent=mkLbl(curKey);
+  var md=getMD(curKey);
+  document.getElementById('incInp').value=md.income||'';
+  var c=document.getElementById('trackSecs');c.innerHTML='';
+  SECS.forEach(function(sec){
+    var blk=document.createElement('div');blk.className='sec-block';
+    var lbl=document.createElement('div');lbl.className='sec-lbl '+sec.cls;
+    lbl.innerHTML='<span>'+sec.lbl+'</span><span>'+fnum(sec.plan)+'</span>';
+    blk.appendChild(lbl);
+    sec.items.forEach(function(item){
+      var row=document.createElement('div');row.className='trow';
+      var val=md.actuals[item.id]!==undefined?md.actuals[item.id]:'';
+      var ic='ti-inp'+(val!==''?(parseFloat(val)>item.p?' ov':' un'):'');
+      row.innerHTML='<div><div class="ti-name">'+item.n+'</div>'+(item.h?'<div class="ti-hint">'+item.h+'</div>':'')+'</div>'
+        +'<div class="ti-plan">'+fnum(item.p)+'</div>'
+        +'<input class="'+ic+'" type="number" inputmode="numeric" data-sec="'+sec.id+'" data-item="'+item.id+'" data-plan="'+item.p+'" placeholder="—" value="'+(val!==''?val:'')+'">';
+      blk.appendChild(row);
+    });
+    var str=document.createElement('div');str.className='str';str.id='str-'+sec.id;
+    blk.appendChild(str);c.appendChild(blk);
+    updStr(sec.id,md.actuals);
+  });
+  updGrand();
+  c.querySelectorAll('input').forEach(function(inp){
+    inp.addEventListener('input',function(){hInp(this);});
+  });
+}
+
+function hInp(inp){
+  var md=getMD(curKey);
+  var v=inp.value.trim();
+  var si=inp.getAttribute('data-sec');
+  var ii=inp.getAttribute('data-item');
+  var pl=parseFloat(inp.getAttribute('data-plan'))||0;
+  if(v===''){delete md.actuals[ii];inp.className='ti-inp';}
+  else{var n=parseFloat(v)||0;md.actuals[ii]=n;inp.className='ti-inp'+(n>pl?' ov':' un');}
+  save();updStr(si,md.actuals);updGrand();
+  if(curScr===0)rDash();
+}
+
+function updStr(sid,actuals){
+  var sec=SECS.find(function(s){return s.id===sid;});if(!sec)return;
+  var t=0;var any=false;
+  sec.items.forEach(function(it){if(actuals[it.id]!==undefined){t+=actuals[it.id];any=true;}});
+  var el=document.getElementById('str-'+sid);if(!el)return;
+  var diff=sec.plan-t;
+  el.innerHTML='<span>Total</span><div class="str-r"><span style="color:var(--primary)">'+(any?'Act: '+fnum(Math.round(t)):'—')+'</span>'+(any?'<span class="'+(diff>=0?'sp':'sn')+'">'+(diff>=0?'Saved ':'Over ')+fnum(Math.abs(Math.round(diff)))+'</span>':'')+'</div>';
+}
+
+function updGrand(){
+  var md=getMD(curKey);
+  var t=calcTot(md.actuals);
+  var any=Object.keys(md.actuals).length>0;
+  var inc=parseFloat(md.income)||23000;
+  var ga=document.getElementById('gtA');var gs=document.getElementById('gtS');var gb=document.getElementById('gtB');
+  if(any){
+    ga.textContent='AED '+fnum(Math.round(t));
+    var d=GP-t;gs.textContent=(d>=0?'Saved ':'Over ')+'AED '+fnum(Math.abs(Math.round(d)));gs.className='gv '+(d>=0?'gsurp':'gdef');
+    var b=inc-t;gb.textContent=(b>=0?'+':'')+'AED '+fnum(Math.round(b));gb.className='gv '+(b>=0?'gsurp':'gdef');
+  }else{ga.textContent='—';gs.textContent='—';gs.className='gv';gb.textContent='—';gb.className='gv';}
+}
+
+// DEBTS
+function rDebts(){
+  var c=document.getElementById('debtList');c.innerHTML='';
+  var tot=0;
+  DEBTS.forEach(function(d){
+    var amt=DB.debts[d.id]!==undefined?DB.debts[d.id]:d.amt;
+    tot+=amt;
+    var card=document.createElement('div');card.className='dcard';
+    card.innerHTML='<div class="dc-hdr"><div class="dc-name">'+d.n+'</div><div class="dc-rate '+d.rc+'">'+d.rate+'</div></div>'
+      +'<div class="dc-amt">AED '+fnum(Math.round(amt))+'</div>'
+      +'<div class="dc-emi">EMI: AED '+fnum(d.emi)+'/month</div>'
+      +'<div class="dc-pb"><div class="dc-pf" style="width:'+d.prog+'%;background:'+d.col+'"></div></div>'
+      +'<div class="dc-pl"><span>Progress</span><span>Target: '+d.tgt+'</span></div>'
+      +'<div class="dc-tgt">🎯 '+d.tgt+'</div>'
+      +'<div class="dc-upd"><input type="number" inputmode="numeric" placeholder="Update AED" id="di-'+d.id+'"><button data-did="'+d.id+'">Save</button></div>';
+    c.appendChild(card);
+  });
+  document.getElementById('totalDebt').textContent='AED '+fnum(Math.round(tot));
+  c.querySelectorAll('button[data-did]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var did=this.getAttribute('data-did');
+      var inp=document.getElementById('di-'+did);
+      var v=parseFloat(inp.value);
+      if(!isNaN(v)&&v>=0){DB.debts[did]=v;save();inp.value='';rDebts();toast('✅ Balance updated');}
+    });
+  });
+}
+
+// HISTORY
+function rHist(){
+  var c=document.getElementById('histList');
+  var keys=Object.keys(DB.archive).sort().reverse();
+  if(keys.length===0){
+    c.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--text3)"><div style="font-size:40px;margin-bottom:12px">📅</div><div style="font-size:14px;font-weight:600">No history yet</div><div style="font-size:12px;margin-top:6px">Settings → Archive This Month after entering data.</div></div>';
+    return;
+  }
+  c.innerHTML='';
+  keys.forEach(function(k){
+    var a=DB.archive[k];var bal=a.income-a.total;var ok=bal>=0;
+    var div=document.createElement('div');div.className='hmonth';
+    div.innerHTML='<div class="hm-hdr" data-k="'+k+'"><div><div class="hm-name">'+a.label+'</div><div class="hm-sub">Income: AED '+fnum(a.income)+' · Spent: AED '+fnum(a.total)+'</div></div>'
+      +'<div class="hm-right"><div class="hm-bal" style="color:'+(ok?'var(--ok)':'var(--danger)')+'">'+( ok?'+':'')+fnum(Math.round(bal))+'</div>'
+      +'<div class="hm-badge '+(ok?'bok':'bng')+'">'+(ok?'✅':'⚠️')+'</div></div></div>'
+      +'<div class="hm-body" id="hb-'+k+'">'+bHD(a.actuals)+'</div>';
+    c.appendChild(div);
+  });
+  c.querySelectorAll('.hm-hdr').forEach(function(h){
+    h.addEventListener('click',function(){
+      var k=this.getAttribute('data-k');
+      var b=document.getElementById('hb-'+k);
+      if(b)b.className='hm-body'+(b.className.indexOf('open')>-1?'':' open');
+    });
+  });
+}
+
+function bHD(actuals){
+  var html='';
+  SECS.forEach(function(sec){
+    var t=0;var any=false;
+    sec.items.forEach(function(it){if(actuals[it.id]!==undefined){t+=actuals[it.id];any=true;}});
+    if(any){
+      html+='<div class="hb-row" style="font-weight:700;background:#f8fafc;padding:6px 0"><span class="hb-cat">'+sec.lbl+'</span><span class="hb-val">AED '+fnum(Math.round(t))+'</span></div>';
+      sec.items.forEach(function(it){
+        if(actuals[it.id]!==undefined){
+          var d=it.p-actuals[it.id];
+          html+='<div class="hb-row"><span class="hb-cat" style="padding-left:10px">↳ '+it.n+'</span><span class="hb-val" style="color:'+(d>=0?'var(--ok)':'var(--danger)')+'">AED '+fnum(Math.round(actuals[it.id]))+'</span></div>';
+        }
+      });
+    }
+  });
+  return html||'<div style="padding:10px;color:var(--text3);font-size:12px">No items saved.</div>';
+}
+
+// ARCHIVE
+function archiveMonth(){
+  var md=getMD(curKey);
+  if(Object.keys(md.actuals).length===0){toast('⚠️ No data to archive');return;}
+  DB.archive[curKey]={label:mkLbl(curKey),total:Math.round(calcTot(md.actuals)),income:parseFloat(md.income)||23000,actuals:JSON.parse(JSON.stringify(md.actuals))};
+  save();toast('✅ '+mkLbl(curKey)+' archived!');rHist();
+}
+
+// EXPORT/IMPORT
+function exportData(){
+  var json=JSON.stringify(DB,null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var d=new Date();
+  a.href=url;a.download='myfinance_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  toast('✅ Backup downloaded');
+}
+
+function importData(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{DB=JSON.parse(ev.target.result);save();rDash();rHist();toast('✅ Data restored');}
+    catch(err){toast('❌ Invalid file');}
+  };
+  reader.readAsText(file);e.target.value='';
+}
+
+function resetAll(){
+  if(confirm('Delete ALL data?\nExport backup first!')){
+    if(confirm('Really delete everything?')){
+      localStorage.removeItem('mf3');
+      DB={months:{},debts:{},archive:{}};
+      toast('🗑️ Cleared');goTo(0);
+    }
+  }
+}
+
+// INIT
+function init(){
+  load();
+  document.getElementById('nb0').addEventListener('click',function(){goTo(0);});
+  document.getElementById('nb1').addEventListener('click',function(){goTo(1);});
+  document.getElementById('nb2').addEventListener('click',function(){goTo(2);});
+  document.getElementById('nb3').addEventListener('click',function(){goTo(3);});
+  document.getElementById('settingsBtn').addEventListener('click',function(){goTo(4);});
+  document.getElementById('btnPrev').addEventListener('click',function(){
+    var p=curKey.split('-').map(Number);var d=new Date(p[0],p[1]-2,1);curKey=mkKey(d);rTrack();
+  });
+  document.getElementById('btnNext').addEventListener('click',function(){
+    var p=curKey.split('-').map(Number);var d=new Date(p[0],p[1],1);curKey=mkKey(d);rTrack();
+  });
+  document.getElementById('incInp').addEventListener('input',function(){
+    var md=getMD(curKey);md.income=this.value;save();updGrand();if(curScr===0)rDash();
+  });
+  document.getElementById('indiaBtn').addEventListener('click',function(){
+    var v=parseFloat(document.getElementById('indiaInp').value);
+    if(!isNaN(v)&&v>0){DB.debts['india_home']=v;document.getElementById('indiaAmt').textContent='₹'+fnum(Math.round(v));save();toast('✅ India loan updated');document.getElementById('indiaInp').value='';}
+  });
+  document.getElementById('btnArchive').addEventListener('click',function(){archiveMonth();});
+  document.getElementById('btnExport').addEventListener('click',function(){exportData();});
+  document.getElementById('btnImportTrig').addEventListener('click',function(){document.getElementById('importFile').click();});
+  document.getElementById('importFile').addEventListener('change',function(e){importData(e);});
+  document.getElementById('btnReset').addEventListener('click',function(){resetAll();});
+  rDash();
+}
+
+window.addEventListener('load',function(){init();});
+</script>
+</body>
+</html>
